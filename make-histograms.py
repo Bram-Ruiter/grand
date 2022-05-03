@@ -6,10 +6,15 @@ Histdir = '~/github/grand/grand-daq-master/tools'
 targetpath = '/home/bram/Documents/grand-data/histograms'
 tempdir = '/home/bram/Documents/grand-data/.temp'
 pathdir = '/home/bram/Documents/grand-data/data/zips'
-filename = 'data-adaq-20220503103856'
-path = str(pathdir) +'/' +str(measurement) +'/' +str(filename) +'.zip'
+#filename = 'data-adaq-20220503103856'
+#measurement = 'Noise-XY'
+#path = str(pathdir) +'/' +str(measurement) +'/' +str(filename) +'.zip'
 
-def makeroot(path, measurement, filename):
+
+
+
+def makeroot(measurement, filename, update=True):
+	path = str(pathdir) +'/' +str(measurement) +'/' +str(filename)
 	if os.path.exists(tempdir):
 		shutil.rmtree(tempdir)
 		os.mkdir(tempdir)
@@ -33,13 +38,23 @@ def makeroot(path, measurement, filename):
 		data = os.listdir(str(tempdir) +'/cur/' +str(folders[i]) +'/')
 		for d in data:
 			os.chdir(str(targetpath) +'/' +str(measurement) +'/' +str(filename) +'/' +str(folders[i]))
-			os.system(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d))
-			os.system('mv Hist.root ' + str(d) +'.root')
-#	shutil.rmtree(tempdir)
+			if os.path.exists(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d)) and update==False:
+				pass
+			else:		
+				os.system(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d))
+				os.system('mv Hist.root ' + str(d) +'.root')
+	os.chdir(pathdir)
+	shutil.rmtree(tempdir)
 	return
 
-def pathfile(pathdir, measurement, filename):
-	path = str(pathdir) +'/' +str(measurement) +'/' +str(filename) +'.zip'
-map = input('Which folder do you want to convert? ')
-makeroot(path, measurement)
+def loopmake():
+	measurements = os.listdir(str(pathdir))
+	for m in measurements:
+		filenames = os.listdir(str(pathdir) +'/' +str(m))
+		for f in filenames:
+			makeroot(m,f)
+	return
+
+
+loopmake()
 
