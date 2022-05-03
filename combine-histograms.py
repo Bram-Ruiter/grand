@@ -2,11 +2,31 @@ import numpy as np
 import os
 import ROOT
 import time
+import shutil
 
 start = time.time()
+targetpath = '/home/bram/Documents/grand-data/graphs'
+tempdir = '/home/bram/Documents/grand-data/.temp'
+pathdir = '/home/bram/Documents/grand-data/data/zips/'
+filename = 'data-adaq-20220503103856.zip'
+path = str(pathdir) + str(filename)
 
-path = 'graphs-legacy/castantenna/Histtd29040002'
+
+def files(path):
+	os.mkdir(tempdir)
+	shutil.unpack_archive(path, extract_dir= tempdir)
+	files = np.array([0,0,0,0])
+	for i in ['AD', 'MD', 'MON', 'TD']:
+		for file in os.listdir(str(tempdir) +'cur/' +str(i)):
+			files.append
+	os.rmdir(tempdir)
+	return
+	
+
+path = '/home/bram/Documents/grand-data/graphs-legacy/castantenna/Histtd29040002'
 file = ROOT.TFile.Open(str(path)+'.root')
+
+
 
 def AmpTooHighV1(data,cut=500): #Determines if any measured amplitude is unphysically high
 	amp = np.asarray(data)
@@ -54,27 +74,29 @@ def graph(hist, channel, logy=True):
 	hist.Draw()
 	c1.Update()
 	if logy: 
-		c1.Print('graphs/nameLogY' +'ch' +str(channel) +'.pdf')
+		c1.Print(str(targetpath) +'/nameLogY' +'ch' +str(channel) +'.pdf')
 	else:
-		c1.Print('graphs/name' +'ch' +str(channel) +'.pdf')
+		c1.Print(str(targetpath) +'graphs/name' +'ch' +str(channel) +'.pdf')
 	input('Press enter to exit')
 	return 
 
-for j in range(1,5):
-	hist = histtotal(file, j) 
-	if hist != 0: #if hist=0 no recorded events for specified channel
-		graph(hist, j)
-	else:
-		pass
-	
+def channelloop(file):	#Makes graphs for every channel
+	for j in range(1,5):
+		hist = histtotal(file, j) 
+		if hist != 0:	#if hist=0 no recorded events for specified channel
+			graph(hist, j)
+		else:
+			pass
+	return	
 
+channelloop(file)
 
 
 end = time.time()
 print('Elapsed time = ' +str(end-start) +' s')
 
 
-
+#os.rmdir(tempdir)
 input('Press enter to exit')
 
 
