@@ -40,6 +40,7 @@ def makeroot(measurement, filename, update):
 		for d in data:
 			os.chdir(str(targetpath) +'/' +str(measurement) +'/' +str(filename) +'/' +str(folders[i])) #change directory so the Hist.root is placed in the correct place
 			if os.path.exists(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d)) and update==False: #update determines if existing histograms are rewritten
+				pass
 			else:		
 				os.system(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d)) #Execute the Hist file for the given measurement
 				os.system('mv Hist.root ' + str(d) +'.root') #rename
