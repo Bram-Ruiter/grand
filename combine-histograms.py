@@ -6,8 +6,8 @@ import shutil
 
 start = time.time()
 targetpath = '/home/bram/Documents/grand-data/graphs'
-path = '/home/bram/Documents/grand-data/graphs-legacy/castantenna/Histtd29040002'
-file = ROOT.TFile.Open(str(path)+'.root')
+histdir = '/home/bram/Documents/grand-data/histograms'
+#file = ROOT.TFile.Open(str(path)+'.root')
 
 
 def AmpTooHighV1(data,cut=500): #Determines if any measured amplitude is unphysically high
@@ -25,7 +25,7 @@ def AmpTooHighV2(data, cut=500): #A bit more effcient than V1
 		return False
 
 
-def histtotal(file, channel): #returns the total FM hist of channel j
+def histtotal(file, filepath, channel): #returns the total FM hist of channel j
 	total = 0 
 	for i in range(5000):
 		try:
@@ -41,7 +41,7 @@ def histtotal(file, channel): #returns the total FM hist of channel j
 			pass
 	return total
 
-def graph(hist, channel, logy=True):
+def graph(hist, filepath, graphpath, j,  logy=True):
 	bins= hist.GetNbinsX()
 	c1 = ROOT.TCanvas('c1','Accumulated Frequency Plot')
 	c1.SetGrid()
@@ -56,25 +56,52 @@ def graph(hist, channel, logy=True):
 	hist.Draw()
 	c1.Update()
 	if logy: 
-		c1.Print(str(targetpath) +'/nameLogY' +'ch' +str(channel) +'.pdf')
+		c1.Print(str(graphpath) +'LogY' +'ch' +str(j) +'.pdf')
 	else:
-		c1.Print(str(targetpath) +'graphs/name' +'ch' +str(channel) +'.pdf')
+		c1.Print(str(graphpath) +'LogOff' +'ch' +str(j) +'.pdf')
 	return 
 
-def channelloop(file):	#Makes graphs for every channel
-	for j in range(1,5):
-		hist = histtotal(file, j) 
-		if hist != 0:	#if hist=0 no recorded events for specified channel
-			graph(hist, j)
-		else:
-			pass
+def channelloop(filepath, graphpath):	#Makes graphs for every channel
+	try: 
+		file = ROOT.TFile.Open(filepath)
+		for j in range(1,5):
+			hist = histtotal(file, filepath, j) 
+			if hist != 0:	#if hist=0 no recorded events for specified channel
+				graph(hist, filepath, graphpath, j)
+			else:
+				pass
+	except OSError:
+		pass
 	return	
 	
-def filelloop(path):
-	
-	os.listdir(
 
-channelloop(file)
+def fileloop(update = False): #loops over all the measurement folders + subfolders
+	measurements = os.listdir(str(histdir))
+	for m in measurements:
+		dirs = os.listdir(str(histdir) + '/' +str(m))
+		try:
+			os.mkdir(str(targetpath) +'/' +str(m))
+		except FileExistsError:
+			pass 
+		for d in dirs:
+			folders = os.listdir(str(histdir) + '/' +str(m) +'/' +str(d))
+			try:
+				os.mkdir(str(targetpath) +'/' +str(m) +'/' +str(d))
+			except FileExistsError:
+				pass 
+			for f in folders:
+				filenames = os.listdir(str(histdir) + '/' +str(m) +'/' +str(d) +'/' +str(f))
+				try:
+					os.mkdir(str(targetpath) +'/' +str(m) +'/' +str(d) +'/' +str(f))
+				except FileExistsError:
+					pass 
+				for file in filenames:
+					filepath = str(histdir) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(file)
+					graphpath = str(targetpath) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(file)
+					channelloop(str(filepath), str(graphpath))
+	return
+
+fileloop()
 
 
 end = time.time()
