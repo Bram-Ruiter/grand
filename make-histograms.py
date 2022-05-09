@@ -5,7 +5,7 @@ import shutil
 
 #fill in your machine's specifics:
 cwd = os.getcwd()
-Histdir = '~/github/grand/grand-daq-master/tools'
+Histdir = '/home/bram/github/grand/grand-daq-master/tools'
 targetpath = '/home/bram/Documents/grand-data/histograms'
 tempdir = '/home/bram/Documents/grand-data/.temp'
 pathdir = '/home/bram/Documents/grand-data/data/zips'
@@ -39,7 +39,7 @@ def makeroot(measurement, filename, update):
 		data = os.listdir(str(tempdir) +'/cur/' +str(folders[i]) +'/') #get the filenames of the subfolder i
 		for d in data:
 			os.chdir(str(targetpath) +'/' +str(measurement) +'/' +str(filename) +'/' +str(folders[i])) #change directory so the Hist.root is placed in the correct place
-			if os.path.exists(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d)) and update==False: #update determines if existing histograms are rewritten
+			if os.path.exists(str(targetpath) +'/' +str(measurement) +'/' +str(filename) +'/' +str(folders[i]) +'/' +str(d)+'.root') and update==False: #update determines if existing histograms are rewritten
 				pass
 			else:		
 				os.system(str(Histdir) + '/Hist ' +str(tempdir) +'/cur/' +str(folders[i]) +'/' +str(d)) #Execute the Hist file for the given measurement
