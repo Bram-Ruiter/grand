@@ -9,6 +9,8 @@ targetpath = '/home/bram/Documents/grand-data/graphs'
 histdir = '/home/bram/Documents/grand-data/histograms'
 #file = ROOT.TFile.Open(str(path)+'.root')
 
+logy= True
+
 
 def AmpTooHighV1(data,cut=500): #Determines if any measured amplitude is unphysically high
 	amp = np.asarray(data)
@@ -17,7 +19,7 @@ def AmpTooHighV1(data,cut=500): #Determines if any measured amplitude is unphysi
 			return True
 	return False
 
-def AmpTooHighV2(data, cut=500): #A bit more effcient than V1
+def AmpTooHighV2(data, cut=8300): #A bit more effcient than V1
 	amp = np.asarray(data)
 	if np.max(amp)>cut:
 		return True
@@ -41,7 +43,7 @@ def histtotal(file, filepath, channel): #returns the total FM hist of channel j
 			pass
 	return total
 
-def graph(hist, filepath, graphpath, j,  logy=True):
+def graph(hist, filepath, graphpath, j):
 	bins= hist.GetNbinsX()
 	c1 = ROOT.TCanvas('c1','Accumulated Frequency Plot')
 	c1.SetGrid()
@@ -63,9 +65,9 @@ def graph(hist, filepath, graphpath, j,  logy=True):
 
 def channelloop(filepath, graphpath):	#Makes graphs for every channel
 	try: 
-		file = ROOT.TFile.Open(filepath)
+		rootfile = ROOT.TFile.Open(filepath)
 		for j in range(1,5):
-			hist = histtotal(file, filepath, j) 
+			hist = histtotal(rootfile, filepath, j) 
 			if hist != 0:	#if hist=0 no recorded events for specified channel
 				graph(hist, filepath, graphpath, j)
 			else:
@@ -75,7 +77,7 @@ def channelloop(filepath, graphpath):	#Makes graphs for every channel
 	return	
 	
 
-def fileloop(update = False): #loops over all the measurement folders + subfolders
+def fileloop(update = True): #loops over all the measurement folders + subfolders
 	measurements = os.listdir(str(histdir))
 	for m in measurements:
 		dirs = os.listdir(str(histdir) + '/' +str(m))
@@ -95,19 +97,24 @@ def fileloop(update = False): #loops over all the measurement folders + subfolde
 					os.mkdir(str(targetpath) +'/' +str(m) +'/' +str(d) +'/' +str(f))
 				except FileExistsError:
 					pass 
-				for file in filenames:
-					filepath = str(histdir) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(file)
-					graphpath = str(targetpath) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(file)
+				for k in filenames:
+					filepath = str(histdir) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(k)
+					graphpath = str(targetpath) + '/' +str(m) + '/' +str(d) + '/' +str(f) +'/' +str(k)
 					channelloop(str(filepath), str(graphpath))
 	return
 
+
+log = input('Do you want logarithmic plot? Answer yes or no. ')
+if log == 'no':
+	logy = False
+else:
+	logy = True
 fileloop()
 
 
 end = time.time()
 print('Elapsed time = ' +str(end-start) +' s')
 
-input('Press enter to exit')
 
 
 ##

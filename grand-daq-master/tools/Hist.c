@@ -115,6 +115,8 @@ void print_du(uint16_t *du)
   int i,ic;
   int ioff;
   short value;
+  short bit14;
+  int mask;
 
   const int16_t max_trace_value = 8193;
   const char invalid_trace_suffix[] = "-Invalid";
@@ -187,6 +189,12 @@ void print_du(uint16_t *du)
       invalid_trace = 0;
       for(i=0;i<du[EVT_TOT_SAMPLES+ic];i++){
         value =(int16_t)du[ioff++];
+        
+        bit14 = (value & ( 1 << 13)) >> 13;
+        mask = 1 << 14; // --- bit 15
+        value = (value & (~mask)) | (bit14 << 14);
+        mask = 1 << 15; // --- bit 16
+        value = (value & (~mask)) | (bit14 << 15);
 
         if ( value > max_trace_value  || value < -max_trace_value){
             invalid_trace = 1;
