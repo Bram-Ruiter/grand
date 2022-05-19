@@ -104,11 +104,16 @@ yamps = np.array(maxamps[1])[3:]
 yampserror = np.array(amperrors[1])[3:]
 zamps = np.array(maxamps[2])[3:]
 zampserror = np.array(amperrors[2])[3:]
-ratioxz = xamps/zamps
+
+ratioxz = xamps/zamps #Moet nog errors toevoegen
+ratioerr= np.sqrt(((1/zamps)**2)*xampserror**2 + ((xamps/(zamps**2))**2)*zampserror**2)
 
 
 def fitfunc(x, a, b):
 	return a*x +b
+
+def constant(x, a):
+	return a+ 0*x
 
 
 #fitx, covx = curve_fit(func, voltages, xamps)
@@ -128,18 +133,32 @@ def ratiograph():
 	plt.figure(1)
 	plt.title('Amplitude ratio plot of x/z')
 	plt.xlabel('Voltage (V)')
-	plt.ylabel('Ratio')
-	plt.scatter(voltages, ratioxz)
+	plt.ylabel('Ratio x/z')
+	plt.errorbar(voltages, ratioxz, yerr= ratioerr, fmt='o')
 	plt.ylim(bottom = 0)
+	plt.grid()
 	plt.show()
 	return
+
+def ratiofit():
+	fit, cov = curve_fit(constant, voltages, ratioxz)
+	plt.figure()
+	plt.title('Amplitude ratio plot of x/z')
+	plt.xlabel('Voltage (V)')
+	plt.ylabel('Ratio x/z')
+	plt.errorbar(voltages, ratioxz, yerr= ratioerr, fmt='o', label='Ratio')
+	plt.plot(voltages, constant(voltages, *fit), 'r-', label ='Ratio-fit: c = %5.3f' %tuple(fit))
+	plt.ylim(bottom = 0)
+	plt.grid()
+	plt.legend()
+	plt.show()
 
 def fitgraph():
 	fitx, covx = curve_fit(fitfunc, voltages, xamps)
 	fity, covy = curve_fit(fitfunc, voltages, yamps)
 	fitz, covz = curve_fit(fitfunc, voltages, zamps)
 
-	plt.figure(2)
+	plt.figure()
 	plt.title('Amplitude plot')
 	plt.xlabel('Voltage (V)')
 	plt.ylabel('Average amplitude per event')
@@ -152,25 +171,18 @@ def fitgraph():
 	plt.plot(voltages, fitfunc(voltages, *fitz), 'b-', label ='Z-fit: a = %5.3f, b= %5.3f' %tuple(fitz))
 	plt.legend()
 	plt.ylim(bottom = 0)
+	plt.grid()
 	plt.show()
 	return
 
 def graph():
-	plt.figure(1)
-	plt.title('Amplitude ratio plot of x/z')
-	plt.xlabel('Voltage (V)')
-	plt.ylabel('Ratio')
-	plt.scatter(voltages, ratioxz)
-	plt.grid()
-	plt.ylim(bottom = 0)
-	plt.show()
 	plt.figure(2)
 	plt.title('Amplitude plot')
 	plt.xlabel('Voltage (V)')
 	plt.ylabel('Average amplitude per event')
-	plt.scatter(voltages, xamps, c='r', label = 'X-Amp')
-	plt.scatter(voltages, yamps, c='g', label = 'Y-Amp')
-	plt.scatter(voltages, zamps, c='b', label = 'Z-Amp')
+	plt.errorbar(voltages, xamps, yerr = xampserror, c='r', fmt='o', label = 'X-Amp')
+	plt.errorbar(voltages, yamps, yerr = yampserror, c='g', fmt='o', label = 'Y-Amp')
+	plt.errorbar(voltages, zamps, yerr = zampserror, c='b', fmt='o', label = 'Z-Amp')
 	plt.legend()
 	plt.grid()
 	plt.ylim(bottom = 0)
