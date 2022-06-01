@@ -1,8 +1,10 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 import ROOT
 import time
 import shutil
+
 
 start = time.time()
 targetpath = '/home/bram/Documents/grand-data/graphs'
@@ -43,17 +45,60 @@ def histtotal(file, filepath, channel): #returns the total FM hist of channel j
 			pass
 	return total
 
-def graph(hist, filepath, graphpath, j):
+def histavg(file, filepath, channel): #returns the average FM hist of channel j
+	total = 0
+	counter=0
+	for i in range(5000):
+		try:
+			hist = eval('file.H' +str(i) +'FM' +str(channel)) #loads the ith histogram of channel j
+			counter +=1
+			if not AmpTooHighV2(eval('file.H' +str(i) +'T1')): #Discard unphysical measurements
+				if total == 0: #use the first histogram to create the object
+					total = hist
+				else:
+						total += hist #Add the histograms
+			else:
+				print( 'Hist' +str(i) +' is rejected')
+		except AttributeError: #If the specified histogram doesnt exist continue the loop
+			pass
+	return total, counter
+
+
+def graph(hist, counter, filepath, graphpath, j): #matplotlib graph
+	global f
 	bins= hist.GetNbinsX()
-	c1 = ROOT.TCanvas('c1','Accumulated Frequency Plot')
-	c1.SetGrid()
+	if counter == 0:
+		return
+	else:
+		pass
+	avg = np.asarray(hist)/counter
+	f = np.linspace(0,250,bins+2)
+	plt.figure(1)
+	plt.title('Average fourrier transform')
+	plt.grid()
+	if logy:
+		plt.yscale('log')
+	else:
+		pass
+	plt.xlabel('Frequency (MHz)')
+	plt.ylabel('Amplitude (' +str(bins) +'/250 MHz$^{-1}$)')
+	plt.plot(f, avg, linewidth = 0.5)
+	if logy: 
+		plt.savefig(str(graphpath) +'LogY' +'ch' +str(j) +'.pdf')
+	else:
+		plt.savefig(str(graphpath) +'LogOff' +'ch' +str(j) +'.pdf')
+	plt.close()
+	return 
+
+def graphV1(hist, filepath, graphpath, j): #ROOT graph
+	bins= hist.GetNbinsX()
 	if logy:
 		c1.SetLogy()
 	else:
 		pass
 	hist.SetTitle('Accumulated Frequency Plot')
 	hist.GetXaxis().SetTitle('Frequency (MHz)')
-	hist.GetYaxis().SetTitle('Amplitude (1/' +str(bins) +'1/MHz)')
+	hist.GetYaxis().SetTitle('Amplitude (' +str(bins) +'/250 MHz$^{-1}$)')
 	hist.SetStats(False)
 	hist.Draw()
 	c1.Update()
@@ -67,9 +112,9 @@ def channelloop(filepath, graphpath):	#Makes graphs for every channel
 	try: 
 		rootfile = ROOT.TFile.Open(filepath)
 		for j in range(1,5):
-			hist = histtotal(rootfile, filepath, j) 
+			hist,counter = histavg(rootfile, filepath, j) 
 			if hist != 0:	#if hist=0 no recorded events for specified channel
-				graph(hist, filepath, graphpath, j)
+				graph(hist, counter, filepath, graphpath, j)
 			else:
 				pass
 	except OSError:
@@ -109,6 +154,7 @@ if log == 'no':
 	logy = False
 else:
 	logy = True
+	
 fileloop()
 
 

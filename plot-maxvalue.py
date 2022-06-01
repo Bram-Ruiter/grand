@@ -133,6 +133,8 @@ def ratiograph():
 	plt.ylim(bottom = 0)
 	plt.grid()
 	plt.savefig(targetpath +'ratio.pdf')
+	plt.clf()
+	plt.close()
 	return
 
 def ratiofit():
@@ -148,12 +150,13 @@ def ratiofit():
 	plt.legend()
 	plt.savefig(targetpath +'ratiofit.pdf')
 	plt.clf()
+	plt.close()
 	return
 
 def fitgraph():
-	fitx, covx = curve_fit(fitfunc, xdata, xamps)
-	fity, covy = curve_fit(fitfunc, xdata, yamps)
-	fitz, covz = curve_fit(fitfunc, xdata, zamps)
+	fitx, covx = curve_fit(fitfunc, xdata, xamps, bounds = ([-np.Inf,0],np.Inf))
+	fity, covy = curve_fit(fitfunc, xdata, yamps, bounds = ([-np.Inf,0],np.Inf))
+	fitz, covz = curve_fit(fitfunc, xdata, zamps, bounds = ([-np.Inf,0],np.Inf))
 
 	plt.figure()
 	plt.title('Amplitude of fourrier transform at broadcast frequency')
@@ -171,6 +174,7 @@ def fitgraph():
 	plt.grid()
 	plt.savefig(targetpath +'scatterfit.pdf')
 	plt.clf()
+	plt.close()
 	return
 
 def graph():
@@ -186,6 +190,7 @@ def graph():
 	plt.ylim(bottom = 0)
 	plt.savefig(targetpath +'scatter.pdf')
 	plt.clf()
+	plt.close()
 	return
 
 def phasehist(channel):
@@ -204,6 +209,7 @@ def phasehist(channel):
 	plt.hist(dataflat)
 	plt.savefig(targetpath +'phasehistflat' +str(channel) +'.pdf')
 	plt.clf()
+	plt.close()
 	return
 
 def make_graphs():
@@ -249,7 +255,7 @@ deltam = [xdata,dir,zip,m,f,xlabel,targetpath,histdir,a,b]
 measurements.append(deltam)
 
 
-#Distances:
+#Distances D1 x:
 xdistance = (10.0+1.9+28.5+207.8)*np.ones(10) - np.array([0,20,40,60,80,100,120,140,160,180]) #horizontal distance in cm
 ydistance = ((80.2-1.0+24.7)-(82.5+2.2))*np.ones(10)
 xdata = np.sqrt(xdistance**2+ydistance**2) #absolute distance in cm
@@ -273,6 +279,35 @@ m = 'TD'
 f = '/td200522.f'
 xlabel = 'Frequency (MHz)'
 targetpath = '/home/bram/Documents/grand-data/graphs/Casting-Z/' +zip + m +'/frequency'
+histdir = dir + zip+ m + f
+a = None
+b = None
+deltam = [xdata,dir,zip,m,f,xlabel,targetpath,histdir,a,b]
+measurements.append(deltam)
+
+#frequencies z:
+xdata = np.array([70,80,90,100,110,120,130,140,150,160])
+dir = '/home/bram/Documents/grand-data/histograms/Casting-Z/'
+zip = 'data-adaq-20220525151609.zip/'
+m = 'MD'
+f = '/md250522.f'
+xlabel = 'Frequency (MHz)'
+targetpath = '/home/bram/Documents/grand-data/graphs/Casting-Z/' +zip + m +'/frequency'
+histdir = dir + zip+ m + f
+a = None
+b = None
+deltam = [xdata,dir,zip,m,f,xlabel,targetpath,histdir,a,b]
+measurements.append(deltam)
+
+
+#voltages z:
+xdata = np.array([2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0])
+dir = '/home/bram/Documents/grand-data/histograms/Casting-Z/'
+zip = 'data-adaq-20220525165448.zip/'
+m = 'MD'
+f = '/md250522.f'
+xlabel = 'Voltage (V)'
+targetpath = '/home/bram/Documents/grand-data/graphs/Casting-Z/' +zip + m +'/voltage'
 histdir = dir + zip+ m + f
 a = None
 b = None
@@ -315,7 +350,6 @@ def measurementloop():
 		maxamps = [[],[],[]]
 		amperrors = [[],[],[]]
 		voltageloop()
-		print(np.size(xdata))
 		xdata = xdata[a:b]
 		xamps = np.array(maxamps[0])[a:b]
 		xampserror = np.array(amperrors[0])[a:b]
@@ -326,7 +360,9 @@ def measurementloop():
 		ratioxz = xamps/zamps
 		ratioerr= np.sqrt(((1/zamps)**2)*xampserror**2 + ((xamps/	(zamps**2))**2)*zampserror**2)
 		make_graphs()
+		print(dir)
 	return
+
 
 measurementloop()
 
